@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nurix AI - USA Retail Signal Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #fff;
+  color: #111;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* HEADER */
+.hdr {
+  border-bottom: 2px solid #000;
+  padding: 24px 40px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+}
+.hdr-title { font-size: 20px; font-weight: 700; letter-spacing: -.4px; }
+.hdr-sub { font-size: 12px; color: #666; margin-top: 3px; }
+.hdr-meta { font-size: 12px; color: #666; white-space: nowrap; }
+
+/* TLDR */
+.tldr {
+  padding: 20px 40px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f9f9f9;
+}
+.tldr-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 8px; }
+.tldr-text { font-size: 13px; color: #333; max-width: 900px; }
+
+/* STATS ROW */
+.stats {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  overflow-x: auto;
+}
+.stat {
+  padding: 16px 24px;
+  border-right: 1px solid #e0e0e0;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+.stat-val { font-size: 22px; font-weight: 700; line-height: 1; }
+.stat-lbl { font-size: 11px; color: #666; margin-top: 4px; }
+
+/* LAYOUT */
+.layout { display: flex; min-height: calc(100vh - 200px); }
+
+/* SIDEBAR NAV */
+.nav {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid #e0e0e0;
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #999;
+  padding: 8px 20px 4px;
+}
+.nav-item {
+  display: block;
+  padding: 7px 20px;
+  font-size: 13px;
+  color: #444;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background .1s;
+}
+.nav-item:hover { background: #f5f5f5; color: #000; }
+.nav-item.active { font-weight: 600; color: #000; background: #f0f0f0; }
+
+/* MAIN CONTENT */
+.main { flex: 1; padding: 32px 40px; max-width: 900px; }
+
+/* SECTION */
+.section { display: none; }
+.section.active { display: block; }
+
+.sec-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  margin-bottom: 6px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #000;
+}
+.sec-sub {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+/* CARDS GRID */
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #e0e0e0; border: 1px solid #e0e0e0; margin-bottom: 24px; }
+.card { background: #fff; padding: 18px; }
+.card-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.card-body { font-size: 12px; color: #444; line-height: 1.65; }
+
+/* SIGNAL LIST */
+.signal-group { margin-bottom: 28px; }
+.signal-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 0;
+  border-bottom: 1px solid #000;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sig-tag {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  background: #000;
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+.signal-item {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+}
+.signal-item:last-child { border-bottom: none; }
+.signal-name { font-weight: 600; color: #111; }
+.signal-desc { color: #444; line-height: 1.6; }
+
+/* SCORING MODEL */
+.score-axis { margin-bottom: 24px; border: 1px solid #e0e0e0; }
+.score-axis-hdr {
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.score-axis-name { font-size: 14px; font-weight: 700; }
+.score-weight {
+  font-size: 22px;
+  font-weight: 700;
+}
+.score-items { padding: 12px 16px; }
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 12px;
+}
+.score-row:last-child { border-bottom: none; }
+.score-label { flex: 1; color: #333; }
+.score-pts {
+  font-family: 'Inter', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 32px;
+  text-align: right;
+}
+.score-bar-wrap { width: 120px; background: #f0f0f0; height: 4px; border-radius: 2px; }
+.score-bar { height: 4px; background: #000; border-radius: 2px; }
+
+/* TIERS */
+.tier-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #e0e0e0; border: 1px solid #e0e0e0; margin-bottom: 16px; }
+.tier-item { background: #fff; padding: 16px; text-align: center; }
+.tier-score { font-size: 20px; font-weight: 700; }
+.tier-label { font-size: 11px; color: #666; margin-top: 4px; }
+.tier-action { font-size: 11px; font-weight: 600; margin-top: 6px; }
+
+/* VERTICALS */
+.vert-item { margin-bottom: 24px; }
+.vert-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.vert-signal { font-size: 11px; color: #666; margin-bottom: 8px; }
+.vert-accounts { display: flex; flex-wrap: wrap; gap: 6px; }
+.vert-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border: 1px solid #000;
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+/* STACK */
+.stack-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.stack-row:first-child { border-top: 1px solid #e0e0e0; }
+.stack-tool { padding: 12px 16px; font-weight: 700; font-size: 12px; background: #f9f9f9; border-right: 1px solid #e0e0e0; display: flex; align-items: flex-start; }
+.stack-use { padding: 12px 16px; font-size: 12px; color: #444; line-height: 1.65; }
+
+/* RECS */
+.rec-item {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.rec-num { font-size: 18px; font-weight: 700; line-height: 1.3; }
+.rec-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.rec-body { font-size: 12px; color: #444; line-height: 1.65; }
+
+/* CAVEATS */
+.caveat-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; font-size: 12px; color: #444; line-height: 1.65; }
+.caveat-item strong { color: #111; }
+
+/* NEGATIVE SIGNALS */
+.neg-list { list-style: none; padding: 0; }
+.neg-list li { padding: 7px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; color: #444; padding-left: 16px; position: relative; }
+.neg-list li::before { content: "-"; position: absolute; left: 0; color: #999; }
+
+@media(max-width: 700px) {
+  .layout { flex-direction: column; }
+  .nav { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid #e0e0e0; display: flex; flex-wrap: wrap; padding: 8px; }
+  .nav-item { width: auto; padding: 5px 12px; }
+  .nav-section-label { display: none; }
+  .hdr { flex-direction: column; padding: 16px 20px; }
+  .main { padding: 20px; }
+  .cards { grid-template-columns: 1fr; }
+  .score-bar-wrap { display: none; }
+  .tier-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div class="hdr-title">Nurix AI - USA Retail Signal Framework</div>
+    <div class="hdr-sub">Account Intelligence & ICP Scoring Playbook for NuPlay AI Voice Agents</div>
+  </div>
+  <div class="hdr-meta">NuRange · GTM Engineering</div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-val">3</div><div class="stat-lbl">Scoring axes</div></div>
+  <div class="stat"><div class="stat-val">55%</div><div class="stat-lbl">Product fit weight</div></div>
+  <div class="stat"><div class="stat-val">20%</div><div class="stat-lbl">AI readiness weight</div></div>
+  <div class="stat"><div class="stat-val">25%</div><div class="stat-lbl">Timing weight</div></div>
+  <div class="stat"><div class="stat-val">6</div><div class="stat-lbl">Target verticals</div></div>
+  <div class="stat"><div class="stat-val">75+</div><div class="stat-lbl">Tier A threshold</div></div>
+</div>
+
+<!-- TLDR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <div class="tldr-text">
+    The highest-converting USA retail accounts combine high CX contact volume + AI readiness + a live timing trigger.
+    WISMO ("Where Is My Order") is the universal wedge - the single largest, most automatable category of retail contact volume ($4–$12/call, 10–25% of all support contacts).
+    Best-fit verticals: high-return apparel, subscription pet/grocery, fitment-driven auto parts, consultative beauty.
+    The full signal stack is buildable on Apollo + Serper + Firecrawl + Supabase + Instantly.
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-item active" onclick="show('overview', this)">Key Findings</button>
+    <div class="nav-section-label">Signal Types</div>
+    <button class="nav-item" onclick="show('firmographic', this)">A. Firmographic</button>
+    <button class="nav-item" onclick="show('technographic', this)">B. Technographic</button>
+    <button class="nav-item" onclick="show('ai-readiness', this)">C. AI Readiness</button>
+    <button class="nav-item" onclick="show('intent', this)">D. Intent</button>
+    <button class="nav-item" onclick="show('pain', this)">E. Operational Pain</button>
+    <button class="nav-item" onclick="show('triggers', this)">F. Business Triggers</button>
+    <button class="nav-item" onclick="show('financial', this)">G. Financial Health</button>
+    <button class="nav-item" onclick="show('displacement', this)">H. Displacement</button>
+    <div class="nav-section-label">Strategy</div>
+    <button class="nav-item" onclick="show('scoring', this)">ICP Scoring Model</button>
+    <button class="nav-item" onclick="show('verticals', this)">Vertical Targeting</button>
+    <button class="nav-item" onclick="show('stack', this)">Signal Sourcing Stack</button>
+    <button class="nav-item" onclick="show('recs', this)">Recommendations</button>
+    <button class="nav-item" onclick="show('caveats', this)">Caveats</button>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div id="overview" class="section active">
+      <div class="sec-title">Key Findings</div>
+      <div class="sec-sub">Six findings that underpin the entire account scoring approach</div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-title">1. WISMO is the anchor use case</div>
+          <div class="card-body">10–25% of retail support contacts are WISMO during normal months, 15–40% at peak, up to 50–80% during holiday pressure. Each call costs $4–$12. ~11% of packages hit a shipping exception. Highest containment rate of any intent category.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">2. Returns are structurally high</div>
+          <div class="card-body">NRF 2025: 15.8% of all retail sales returned ($849.9B total). Online: 19.3%. By category: apparel 20–40%, electronics 8–15%, beauty 4–12%. High return rate → high WISMO + WISMR volume.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">3. AI leadership is measurable</div>
+          <div class="card-body">76% of enterprises have a Chief AI Officer in 2026 (IBM IBV, May 2026), up from 26% in 2025. 85% of F500 mention AI in 10-K filings. Named AI executives are directly trackable per-account via Apollo + press.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">4. Earnings-call AI talk is at a record</div>
+          <div class="card-body">FactSet Mar 2026: "AI" cited on 331 of 485 Q4 2025 S&P 500 earnings calls (68%) - a 10-year high. Executive AI/CX/cost-reduction quotes are scrapeable per-account via Serper + Firecrawl.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">5. Legacy CC stacks signal displacement</div>
+          <div class="card-body">Avaya, older Genesys, Nuance legacy speech, rules-based chatbots - ripe for conversational AI replacement. NICE acquired Cognigy Sept 2025 (~$955M). Five9 and Genesys bolting on AI. An Avaya install is a displacement target.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">6. Full stack is buildable today</div>
+          <div class="card-body">Apollo (firmographics, technographics, job postings), Serper + Firecrawl (earnings/10-K/press/Glassdoor scraping), SEC EDGAR full-text search (free, AI filing mentions), Supabase, Instantly for activation.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FIRMOGRAPHIC -->
+    <div id="firmographic" class="section">
+      <div class="sec-title">A. Firmographic Signals</div>
+      <div class="sec-sub">Fit foundation - score these first. Intent on a bad-fit account is wasted.</div>
+      <div class="signal-group">
+        <div class="signal-item"><div class="signal-name">Revenue band</div><div class="signal-desc">Target $500M+ (threshold for dedicated CX operations and budget). Sweet spot $1B–$50B. Below $250M rarely has a contact center worth automating.</div></div>
+        <div class="signal-item"><div class="signal-name">Headcount & frontline workforce</div><div class="signal-desc">Large customer-service / store-associate workforces signal labor cost AI displaces. High seasonal/temp hiring is a strong proxy for CX volume.</div></div>
+        <div class="signal-item"><div class="signal-name">Store count + channel mix</div><div class="signal-desc">High store count + meaningful e-commerce penetration = omnichannel contact complexity (BORIS returns, order status, store inventory). Pure brick-and-mortar with negligible online = weaker fit.</div></div>
+        <div class="signal-item"><div class="signal-name">Geography</div><div class="signal-desc">USA HQ or major US operations. Multi-banner / multi-brand retailers (Kroger's 24 banners, Gap's 4) multiply contact complexity.</div></div>
+        <div class="signal-item"><div class="signal-name">Category / vertical</div><div class="signal-desc">Prioritize high-return, high-order-status, subscription, or consultative categories. Return rate is the single best WISMO proxy.</div></div>
+      </div>
+    </div>
+
+    <!-- TECHNOGRAPHIC -->
+    <div id="technographic" class="section">
+      <div class="sec-title">B. Technographic Signals</div>
+      <div class="sec-sub">Fit + integration + displacement - what's already deployed tells you how to enter.</div>
+      <div class="signal-group">
+        <div class="signal-item"><div class="signal-name">CCaaS / IVR</div><div class="signal-desc">Genesys, NICE CXone, Five9, Avaya, Cisco, Talkdesk, 8x8, Amazon Connect. Legacy Avaya/Genesys = displacement opportunity. Modern CCaaS = integration-friendly.</div></div>
+        <div class="signal-item"><div class="signal-name">CRM / CS platforms</div><div class="signal-desc">Salesforce Service Cloud, Zendesk, Freshworks, Gladly, Kustomer - integration anchors. Presence confirms the account has a scaled support operation.</div></div>
+        <div class="signal-item"><div class="signal-name">E-commerce platform</div><div class="signal-desc">SFCC / Adobe Commerce installs skew enterprise. Shopify Plus = DTC / mid-market. BigCommerce, commercetools, SAP Commerce also relevant. Platform = order complexity.</div></div>
+        <div class="signal-item"><div class="signal-name">Legacy chatbot / WFM</div><div class="signal-desc">Nuance (legacy speech), older rules-based bots, WFM tools indicate scaled operations - and usually a CX team actively evaluating replacements.</div></div>
+        <div class="signal-item"><div class="signal-name">Detection method</div><div class="signal-desc">Apollo technographics (job-posting-derived) + BuiltWith/Wappalyzer for web-visible stack. Cross-verify with two sources, flag &lt;90-day recency before personalizing outreach.</div></div>
+      </div>
+    </div>
+
+    <!-- AI READINESS -->
+    <div id="ai-readiness" class="section">
+      <div class="sec-title">C. AI Readiness Signals</div>
+      <div class="sec-sub">Whether the account is ready to buy - not just able to use - AI.</div>
+      <div class="signal-group">
+        <div class="signal-item"><div class="signal-name">AI leadership roles</div><div class="signal-desc">Chief AI Officer, Chief Data & AI Officer, VP/Head of AI, CDTO. Examples: Kroger → Milen Mahadevan (Chief Data & AI Officer, Feb 2026); e.l.f. Beauty → Ekta Chopra (Chief Technology & AI Officer). Track via Apollo title search + press.</div></div>
+        <div class="signal-item"><div class="signal-name">AI in 10-K / 10-Q</div><div class="signal-desc">85% of F500 now mention AI in filings. Use SEC EDGAR full-text search (free, 10 req/sec) or sec-api.io. Query "artificial intelligence," "conversational AI," "contact center," "automation." Store matched quote + date.</div></div>
+        <div class="signal-item"><div class="signal-name">AI in earnings calls</div><div class="signal-desc">Serper to find transcript URL → Firecrawl scrape → keyword/LLM extraction of AI/CX/cost-cut quotes. Record quote + date + executive who said it.</div></div>
+        <div class="signal-item"><div class="signal-name">AI job postings</div><div class="signal-desc">Roles mentioning conversational AI, ML, automation, "agentic," prompt engineering, contact-center AI. Apollo hiring filters + Firecrawl of careers pages. Track delta over 60 days (2→15 open roles = strong signal).</div></div>
+        <div class="signal-item"><div class="signal-name">AI vendor partnerships</div><div class="signal-desc">Google Gemini (Macy's, Ulta, Gap, Kroger, Walmart), Microsoft/Adobe, AWS. Important: most are front-end discovery/personalization - NOT voice/WISMO CC automation. Leaves Nurix's niche open at most named accounts.</div></div>
+      </div>
+    </div>
+
+    <!-- INTENT -->
+    <div id="intent" class="section">
+      <div class="sec-title">D. Intent Signals</div>
+      <div class="sec-sub">Timing layer - only ~5–10% of ICP is in-market at any time. Intent prioritizes within the fit list; it doesn't define it.</div>
+      <div class="signal-group">
+        <div class="signal-item"><div class="signal-name">Third-party intent</div><div class="signal-desc">Bombora (~$12K–40K/yr, account-level co-op), G2 Buyer Intent (high-fidelity, software-buyer skewed), TechTarget Priority Engine (named buyers, IT skewed). Topic: "conversational AI," "contact center automation," "IVR," "returns management."</div></div>
+        <div class="signal-item"><div class="signal-name">RFP / RFI activity</div><div class="signal-desc">Monitor procurement portals, trade press, and job posts referencing "contact center transformation," "RFP," "vendor evaluation."</div></div>
+        <div class="signal-item"><div class="signal-name">Conference attendance</div><div class="signal-desc">NRF Big Show (Jan, NYC - 45K+ attendees, AI dominated 2026), Shoptalk (Mar, Las Vegas), eTail West, CCW (Customer Contact Week), NRF Rev (reverse logistics). Exhibitor/speaker lists = scrapeable active-evaluation signals.</div></div>
+      </div>
+    </div>
+
+    <!-- PAIN -->
+    <div id="pain" class="section">
+      <div class="sec-title">E. Operational Pain Signals</div>
+      <div class="sec-sub">Product-need proxies - the heaviest weight in the fit score.</div>
+      <div class="signal-group">
+        <div class="signal-item"><div class="signal-name">WISMO volume proxies</div><div class="signal-desc">High return rate (NRF category benchmarks), high order volume, shipping/last-mile complexity (FedEx/UPS/USPS/DHL partnerships, 3PL use). ~11% of packages hit a shipping exception.</div></div>
+        <div class="signal-item"><div class="signal-name">Seasonal CX surge hiring</div><div class="signal-desc">43% of retailers hire seasonal staff for returns (NRF), 49% use 3PL for holiday returns. Job-posting spikes for "seasonal customer service / call center" in Q3/Q4 = acute, time-bound pain. Track via Apollo + careers-page scraping.</div></div>
+        <div class="signal-item"><div class="signal-name">BPO / KPO dependency</div><div class="signal-desc">Retailers using Teleperformance, Concentrix, Alorica, TTEC, Fusion CX, Philippines/India BPOs. BPO spend = displaceable cost. US-to-Philippines saves 40–70% but AI voice undercuts even that. BPO dependency is a strong buy signal.</div></div>
+        <div class="signal-item"><div class="signal-name">Glassdoor / social complaints</div><div class="signal-desc">Firecrawl scrape Glassdoor call-center role reviews + Trustpilot. Tag burnout/turnover/"hold times"/"scripted" mentions. Burnout mentions up ~32% YoY. Customer complaints about hold times and order status = confirmed pain.</div></div>
+        <div class="signal-item"><div class="signal-name">Return / refund complaints</div><div class="signal-desc">WISMR (Where Is My Refund) volume, reverse-logistics friction, social complaints about refund timelines. Scales with return rate.</div></div>
+      </div>
+    </div>
+
+    <!-- TRIGGERS -->
+    <div id="triggers" class="section">
+      <div class="sec-title">F. Business Event Triggers</div>
+      <div class="sec-sub">Timing signals - apply decay (full at 30 days, 75% at 60, 50% at 90).</div>
+      <div class="signal-group">
+        <div class="signal-item"><div class="signal-name">Funding / PE ownership</div><div class="signal-desc">New capital or PE owner focused on EBITDA expansion → automation budget. PE-backed retailers are under active margin pressure.</div></div>
+        <div class="signal-item"><div class="signal-name">M&A / acquisition</div><div class="signal-desc">Mergers create contact-center consolidation needs. Examples: Dick's–Foot Locker (2025), Saks–Neiman Marcus. Integration window = displacement window.</div></div>
+        <div class="signal-item"><div class="signal-name">New C-suite hire</div><div class="signal-desc">New CEO/CFO/CIO/CDO/CAIO bring transformation mandates and new budgets. Examples: Kroger's new CEO Greg Foran (Feb 2026). New leaders = open ears.</div></div>
+        <div class="signal-item"><div class="signal-name">Cost-reduction guidance</div><div class="signal-desc">Explicit cost-cut / margin / efficiency language in earnings calls is the single best timing trigger for an automation pitch. Quote it in outreach.</div></div>
+        <div class="signal-item"><div class="signal-name">Store openings / closures</div><div class="signal-desc">Restructuring retailers are acutely cost-focused. ~15,000 US store closures projected in 2025. Screen financial viability - avoid Chapter 11 liquidations.</div></div>
+        <div class="signal-item"><div class="signal-name">Supply chain disruptions</div><div class="signal-desc">Carrier disruptions spike WISMO 3–5x. Tariff pressure (2025) raising costs across the board. Both create acute pain and budget urgency.</div></div>
+      </div>
+    </div>
+
+    <!-- FINANCIAL -->
+    <div id="financial" class="section">
+      <div class="sec-title">G. Financial Health Signals</div>
+      <div class="sec-sub">Use to qualify, not disqualify - the goal is "motivated and able."</div>
+      <div class="signal-group">
+        <div class="signal-item"><div class="signal-name">Revenue growth + EBITDA</div><div class="signal-desc">Distinguish "cost-pressured but solvent" (ideal - motivated + able) from "distressed / pre-bankruptcy" (negative signal). Growing or stable margins = budget available.</div></div>
+        <div class="signal-item"><div class="signal-name">CapEx on tech</div><div class="signal-desc">10-K capex on technology/digital/AI signals budget. McKinsey: 92% of executives plan to increase AI spend over three years. IR presentation language on automation = active intent.</div></div>
+        <div class="signal-item"><div class="signal-name">Investor-deck language</div><div class="signal-desc">Firecrawl IR decks for "automation," "AI," "efficiency," "labor productivity." Investor commitments to AI/automation create internal pressure to execute.</div></div>
+      </div>
+    </div>
+
+    <!-- DISPLACEMENT -->
+    <div id="displacement" class="section">
+      <div class="sec-title">H. Competitive Displacement Signals</div>
+      <div class="sec-sub">How to enter and what to position against.</div>
+      <div class="signal-group">
+        <div class="signal-item"><div class="signal-name">Legacy IVR → displace</div><div class="signal-desc">Avaya, older Genesys Multicloud/on-prem, Cisco, Nuance legacy speech, aging rules-based chatbots. Costly, inflexible, ripe for conversational-AI replacement. Lead with TCO comparison.</div></div>
+        <div class="signal-item"><div class="signal-name">Modern CCaaS → integrate</div><div class="signal-desc">NICE CXone, Five9, Talkdesk, Genesys Cloud bolting on AI. Competitive but integration-feasible. Position Nurix's WISMO-specific depth + agentic workflows + document automation as the missing layer.</div></div>
+        <div class="signal-item"><div class="signal-name">Front-end-only AI → whitespace</div><div class="signal-desc">Gemini/Adobe shopping assistants at Macy's/Ulta/Gap/Kroger are discovery-focused, leaving voice/post-purchase/WISMO contact-center automation open. Confirm scope before deprioritizing.</div></div>
+        <div class="signal-item"><div class="signal-name">In-house build → build-vs-buy</div><div class="signal-desc">Accounts with internal AI programs (Ace Hardware / Hey ARMA) or deep in-house platforms (Chewy AI care self-service) require a build-vs-buy conversation, not a standard displacement pitch.</div></div>
+      </div>
+    </div>
+
+    <!-- SCORING -->
+    <div id="scoring" class="section">
+      <div class="sec-title">ICP Scoring Model</div>
+      <div class="sec-sub">Three independent axes, 0–100 composite. Keep axes visible so reps know why an account scored where it did.</div>
+
+      <div class="score-axis">
+        <div class="score-axis-hdr">
+          <div><div class="score-axis-name">Product-Need / Fit</div><div style="font-size:11px;color:#666;margin-top:2px">Heaviest weight - hardest to change</div></div>
+          <div class="score-weight">55%</div>
+        </div>
+        <div class="score-items">
+          <div class="score-row"><span class="score-label">Revenue / size band</span><span class="score-pts">10</span><div class="score-bar-wrap"><div class="score-bar" style="width:62%"></div></div></div>
+          <div class="score-row"><span class="score-label">Channel / omnichannel complexity</span><span class="score-pts">8</span><div class="score-bar-wrap"><div class="score-bar" style="width:50%"></div></div></div>
+          <div class="score-row"><span class="score-label">Category return / WISMO intensity</span><span class="score-pts">12</span><div class="score-bar-wrap"><div class="score-bar" style="width:75%"></div></div></div>
+          <div class="score-row"><span class="score-label">Contact-volume & seasonal-surge proxies</span><span class="score-pts">10</span><div class="score-bar-wrap"><div class="score-bar" style="width:62%"></div></div></div>
+          <div class="score-row"><span class="score-label">BPO dependency</span><span class="score-pts">7</span><div class="score-bar-wrap"><div class="score-bar" style="width:44%"></div></div></div>
+          <div class="score-row"><span class="score-label">CCaaS / CRM integration anchor present</span><span class="score-pts">8</span><div class="score-bar-wrap"><div class="score-bar" style="width:50%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="score-axis">
+        <div class="score-axis-hdr">
+          <div><div class="score-axis-name">AI Readiness</div><div style="font-size:11px;color:#666;margin-top:2px">Named AI leadership, filings, partnerships, job postings</div></div>
+          <div class="score-weight">20%</div>
+        </div>
+        <div class="score-items">
+          <div class="score-row"><span class="score-label">Named AI leadership role (CAIO, VP AI, CDAO)</span><span class="score-pts">7</span><div class="score-bar-wrap"><div class="score-bar" style="width:44%"></div></div></div>
+          <div class="score-row"><span class="score-label">AI mentioned in 10-K / earnings calls</span><span class="score-pts">6</span><div class="score-bar-wrap"><div class="score-bar" style="width:38%"></div></div></div>
+          <div class="score-row"><span class="score-label">AI vendor partnership or AI job postings</span><span class="score-pts">7</span><div class="score-bar-wrap"><div class="score-bar" style="width:44%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="score-axis">
+        <div class="score-axis-hdr">
+          <div><div class="score-axis-name">Timing / Trigger</div><div style="font-size:11px;color:#666;margin-top:2px">Apply decay: 100% at 30d · 75% at 60d · 50% at 90d</div></div>
+          <div class="score-weight">25%</div>
+        </div>
+        <div class="score-items">
+          <div class="score-row"><span class="score-label">Cost-reduction guidance in earnings</span><span class="score-pts">8</span><div class="score-bar-wrap"><div class="score-bar" style="width:50%"></div></div></div>
+          <div class="score-row"><span class="score-label">New relevant C-suite hire</span><span class="score-pts">5</span><div class="score-bar-wrap"><div class="score-bar" style="width:31%"></div></div></div>
+          <div class="score-row"><span class="score-label">Funding / M&A / restructuring event</span><span class="score-pts">5</span><div class="score-bar-wrap"><div class="score-bar" style="width:31%"></div></div></div>
+          <div class="score-row"><span class="score-label">Seasonal CX hiring spike</span><span class="score-pts">4</span><div class="score-bar-wrap"><div class="score-bar" style="width:25%"></div></div></div>
+          <div class="score-row"><span class="score-label">Third-party intent surge</span><span class="score-pts">3</span><div class="score-bar-wrap"><div class="score-bar" style="width:19%"></div></div></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Tier Thresholds</div>
+        <div class="tier-row">
+          <div class="tier-item"><div class="tier-score">75+</div><div class="tier-label">Tier A</div><div class="tier-action">Immediate personalized sequence</div></div>
+          <div class="tier-item"><div class="tier-score">55–74</div><div class="tier-label">Tier B</div><div class="tier-action">Sequence + nurture</div></div>
+          <div class="tier-item"><div class="tier-score">40–54</div><div class="tier-label">Tier C</div><div class="tier-action">Low-touch nurture</div></div>
+          <div class="tier-item"><div class="tier-score">&lt;40</div><div class="tier-label">Suppress</div><div class="tier-action">Remove from queue</div></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Negative Signals - Subtract from Score</div>
+      <ul class="neg-list">
+        <li>Pre-bankruptcy / Chapter 11 liquidation</li>
+        <li>Revenue under $250M or negligible CX operation</li>
+        <li>Already deeply in-house on conversational voice AI (e.g. Chewy)</li>
+        <li>Pure brick-and-mortar with no meaningful e-commerce</li>
+      </ul>
+    </div>
+
+    <!-- VERTICALS -->
+    <div id="verticals" class="section">
+      <div class="sec-title">Vertical Targeting</div>
+      <div class="sec-sub">WISMO is the universal wedge across all verticals - ~73% of WISMO contacts are preventable via proactive comms (Forrester).</div>
+
+      <div class="vert-item">
+        <div class="vert-title">Fashion / Apparel</div>
+        <div class="vert-signal">WISMO driver: highest return rates (20–40%) · sizing/fit + bracketing · WISMR volume</div>
+        <div class="vert-accounts">
+          <span class="vert-tag">Macy's (~$22B)</span>
+          <span class="vert-tag">Gap Inc.</span>
+          <span class="vert-tag">Nordstrom</span>
+          <span class="vert-tag">TJX Companies</span>
+          <span class="vert-tag">Lululemon</span>
+          <span class="vert-tag">Nike</span>
+          <span class="vert-tag">Ralph Lauren</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid #e0e0e0;margin:20px 0"></div>
+
+      <div class="vert-item">
+        <div class="vert-title">Grocery</div>
+        <div class="vert-signal">WISMO driver: order/pickup status · substitutions · loyalty · pharmacy · Instacart/delivery</div>
+        <div class="vert-accounts">
+          <span class="vert-tag">Kroger (~$147.6B)</span>
+          <span class="vert-tag">Albertsons (~$80.4B)</span>
+          <span class="vert-tag">Publix ($59.7B)</span>
+          <span class="vert-tag">H-E-B (~$49.6B)</span>
+          <span class="vert-tag">Ahold Delhaize USA</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid #e0e0e0;margin:20px 0"></div>
+
+      <div class="vert-item">
+        <div class="vert-title">Sporting Goods</div>
+        <div class="vert-signal">WISMO driver: fit/sizing · equipment fitment · sneaker-drop spikes · loyalty · team orders</div>
+        <div class="vert-accounts">
+          <span class="vert-tag">Dick's (~$14.1B)</span>
+          <span class="vert-tag">Academy Sports (~$6.16B)</span>
+          <span class="vert-tag">Bass Pro / Cabela's (~$7.3B)</span>
+          <span class="vert-tag">REI</span>
+          <span class="vert-tag">Hibbett</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid #e0e0e0;margin:20px 0"></div>
+
+      <div class="vert-item">
+        <div class="vert-title">Beauty / Cosmetics</div>
+        <div class="vert-signal">WISMO driver: shade/undertone matching · ingredient questions · launch-week call spikes · loyalty replenishment</div>
+        <div class="vert-accounts">
+          <span class="vert-tag">Ulta Beauty (~$11B)</span>
+          <span class="vert-tag">Sephora</span>
+          <span class="vert-tag">Bath & Body Works</span>
+          <span class="vert-tag">e.l.f. Beauty</span>
+          <span class="vert-tag">Estée Lauder brands</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid #e0e0e0;margin:20px 0"></div>
+
+      <div class="vert-item">
+        <div class="vert-title">Auto Parts / Auto Retail</div>
+        <div class="vert-signal">WISMO driver: part fitment/compatibility ("will this fit my 2019 Civic?") · availability · DIFM commercial · warranty/core charges</div>
+        <div class="vert-accounts">
+          <span class="vert-tag">AutoZone (~$18.5B)</span>
+          <span class="vert-tag">O'Reilly ($16.7B)</span>
+          <span class="vert-tag">Genuine Parts / NAPA (~$24.3B)</span>
+          <span class="vert-tag">Advance Auto Parts (~$11.5B)</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid #e0e0e0;margin:20px 0"></div>
+
+      <div class="vert-item">
+        <div class="vert-title">Pet Specialty</div>
+        <div class="vert-signal">WISMO driver: Autoship management · recurring-order WISMO · Rx/vet-diet · subscription returns</div>
+        <div class="vert-accounts">
+          <span class="vert-tag">Chewy ($12.6B - doc automation angle)</span>
+          <span class="vert-tag">Petco</span>
+          <span class="vert-tag">PetSmart (~$10B)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STACK -->
+    <div id="stack" class="section">
+      <div class="sec-title">Signal Sourcing Stack</div>
+      <div class="sec-sub">How to source each signal type on the NuRange stack (Supabase · Apollo · Serper · Firecrawl · Instantly).</div>
+
+      <div class="stack-row"><div class="stack-tool">Apollo API</div><div class="stack-use">Firmographics (revenue, headcount, geo) → Supabase <code>companies</code> table. Technographic filters + job-posting extraction for web-visible stack. Title search for AI leadership roles (CAIO, VP AI, CDAO). Hiring-department filter for seasonal CX spikes.</div></div>
+      <div class="stack-row"><div class="stack-tool">Firecrawl</div><div class="stack-use">Careers pages for CCaaS platform-admin job titles (Genesys, NICE, Five9 admins = confirmed platform). IR pages for press releases + AI partnership announcements. Glassdoor call-center reviews (burnout/hold-time mentions). Trustpilot for customer WISMO/hold-time complaints. Earnings transcript URLs surfaced by Serper.</div></div>
+      <div class="stack-row"><div class="stack-tool">Serper</div><div class="stack-use">News search for business events (funding, M&A, C-suite hires, restructuring). Earnings transcript discovery ("[Company] Q3 2025 earnings transcript"). Conference attendee/speaker list scraping (NRF, Shoptalk, CCW). Vendor case study page discovery.</div></div>
+      <div class="stack-row"><div class="stack-tool">SEC EDGAR</div><div class="stack-use">Full-text search API (free, 10 req/sec). Query by CIK for "artificial intelligence," "conversational AI," "contact center," "automation," "customer experience" in 10-K and 10-Q filings. Store matched quote + filing date + form type.</div></div>
+      <div class="stack-row"><div class="stack-tool">Supabase</div><div class="stack-use">Central store for all signals. Scheduled jobs for score recomputation (Fit monthly, Timing/Intent continuously). Decay function on trigger signals. Tiered views feeding Instantly sequences. Confidence score + source + recency date per signal.</div></div>
+      <div class="stack-row"><div class="stack-tool">Instantly v2</div><div class="stack-use">Activation layer. Tier A → multi-threaded signal-specific sequences citing the trigger. Tier B → category-pain WISMO economics sequences. Tier C → monthly nurture. 45 inboxes across Nurix and NuPlay domains, phased ramp to 20 emails/inbox/day.</div></div>
+      <div class="stack-row"><div class="stack-tool">Optional: Bombora / G2</div><div class="stack-use">Third-party intent. Bombora topic surge on "conversational AI," "contact center automation," "IVR," "returns management." G2 Buyer Intent for high-fidelity named buyers. Trial for one quarter, run 60-day head-to-head on pipeline quality before committing $12K–40K/yr.</div></div>
+    </div>
+
+    <!-- RECS -->
+    <div id="recs" class="section">
+      <div class="sec-title">Recommendations</div>
+      <div class="sec-sub">Six-step phased build plan</div>
+
+      <div class="rec-item">
+        <div class="rec-num">1</div>
+        <div><div class="rec-title">Stand up the Fit layer first - Weeks 1–4</div><div class="rec-body">Pull the USA retail universe ($500M+ revenue, target verticals) into Supabase via Apollo. Score firmographics + technographics + category return/WISMO intensity. Gate out sub-threshold and distressed accounts. Benchmark: if more than 40% of Tier A accounts lack a real contact-center operation, tighten the need proxies.</div></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-num">2</div>
+        <div><div class="rec-title">Layer AI-Readiness + triggers - Weeks 4–8</div><div class="rec-body">Add SEC EDGAR AI-filing scan, earnings-transcript scraping (Serper+Firecrawl), AI-leadership title search, and a news-trigger watch (funding/M&A/C-suite/cost-cut). Wire decay. Benchmark: Tier A should close ~2x Tier B within two quarters; if not, rebalance toward Timing.</div></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-num">3</div>
+        <div><div class="rec-title">Add pain + intent enrichment - Weeks 8–12</div><div class="rec-body">Glassdoor/Trustpilot scraping, seasonal-hiring deltas, BPO-vendor detection, conference-list scraping. Optionally trial Bombora for one quarter on retail-CX topics and run a 60-day head-to-head on pipeline quality before committing budget.</div></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-num">4</div>
+        <div><div class="rec-title">Sequence by tier in Instantly</div><div class="rec-body">Tier A: multi-threaded, signal-specific outreach citing the trigger ("saw your Q3 guidance on cost efficiency" / "noticed 12 seasonal CX roles opened"). Tier B: category-pain sequences built around WISMO economics. Tier C: monthly nurture.</div></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-num">5</div>
+        <div><div class="rec-title">Lead with WISMO ROI math</div><div class="rec-body">For every Tier A account, auto-generate the WISMO business case: estimated monthly WISMO contacts × $4–$12 × ~80% automation rate = projected savings. NuPlay positioning (automates 80%+ of inquiries, cuts support costs 65%+) maps directly to this calculation.</div></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-num">6</div>
+        <div><div class="rec-title">Prioritize whitespace verticals</div><div class="rec-body">Auto parts (fitment; apparent CC-AI whitespace) and subscription pet/grocery e-commerce offer strong need with less incumbent AI. Weight these up. De-prioritize accounts already deep in-house (Chewy) except for document-automation / agentic-workflow cross-sell.</div></div>
+      </div>
+    </div>
+
+    <!-- CAVEATS -->
+    <div id="caveats" class="section">
+      <div class="sec-title">Caveats</div>
+      <div class="sec-sub">What to watch out for when using this framework</div>
+
+      <div class="caveat-item"><strong>Vendor-sourced statistics skew high.</strong> Many WISMO/return/BPO percentages come from BPO and SaaS blogs with incentive to inflate. Most reliable returns data: NRF/Happy Returns 2025 ($849.9B / 15.8% / 19.3% online). Conservative WISMO benchmark: DigitalGenius (10–25% normal, 15–40% peak). Use ranges as directional, not audited.</div>
+      <div class="caveat-item"><strong>AI-leadership counts vary by source.</strong> IBM's CAIO figure jumped from 26% (2025) → 76% (2026). DataIQ (33.1%), West Monroe, and Gartner differ significantly. Gartner remains skeptical the CAIO role goes fully mainstream. Verify per-account rather than relying on market averages.</div>
+      <div class="caveat-item"><strong>Revenue / store-count figures vary by fiscal year and source.</strong> Statista, Macrotrends, ZoomInfo, and 8-Ks often disagree. Verify against the latest SEC filings before outreach. Some ZoomInfo sporting-goods figures appear unreliable.</div>
+      <div class="caveat-item"><strong>AI partnership ≠ closed market.</strong> Gemini/Adobe deals at Macy's/Ulta/Gap/Kroger are largely front-end discovery. Confirm whether voice/post-purchase/WISMO is actually covered before deprioritizing the account.</div>
+      <div class="caveat-item"><strong>Intent data is probabilistic and account-level.</strong> IP-to-company matching means only ~5–10% of ICP is in-market at any time. Use to prioritize within the fit list; it does not define the list.</div>
+      <div class="caveat-item"><strong>Scraping compliance.</strong> Glassdoor/Trustpilot/LinkedIn scraping must respect ToS and data-privacy law (CCPA, California Delete Act operational Aug 2026). Prefer APIs and public data. Govern PII.</div>
+      <div class="caveat-item"><strong>Timing signals are perishable.</strong> Without scheduled re-scoring, the model rots within roughly a year. Implement decay as Supabase scheduled jobs. Recompute Fit monthly, Timing/Intent continuously.</div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
